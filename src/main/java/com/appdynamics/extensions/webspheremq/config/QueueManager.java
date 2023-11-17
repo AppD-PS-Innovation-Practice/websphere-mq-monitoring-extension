@@ -33,6 +33,7 @@ public class QueueManager {
 	private String encryptionKey;
 	private String replyQueuePrefix;
 	private String modelQueueName;
+	private String timeZone;
 
 	private ResourceFilters queueFilters;
 
@@ -223,6 +224,14 @@ public class QueueManager {
 
 	public void setEncoding(int encoding) {
 		this.encoding = encoding;
+	}
+
+	public String getTimeZone() {
+		return timeZone;
+	}
+
+	public void setTimeZone(String timeZone) {
+		this.timeZone = timeZone;
 	}
 
 	public ResourceFilters getTopicFilters() {

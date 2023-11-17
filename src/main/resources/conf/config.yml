@@ -63,6 +63,9 @@ queueManagers:
     # For translation to IBM Cipher  http://www.ibm.com/support/knowledgecenter/SSFKSJ_8.0.0/com.ibm.mq.dev.doc/q113210_.htm
     #cipherSuite: ""
 
+    #Timezone. Set to your MQ manager timezone, when adding LAST GET/PUT DATE/TIME KPIs
+    #timeZone: "America/Los_Angeles"
+
 
     queueFilters:
         #Can provide complete queue name or generic names. A generic name is a character string followed by an asterisk (*),
@@ -155,6 +158,9 @@ mqMetrics:
 #            timeRollUpType: "CURRENT"
 #            clusterRollUpType: "INDIVIDUAL"
 
+
+
+
         - UncommittedMsgs:
             alias: "UncommittedMsgs"
             ibmConstant: "com.ibm.mq.constants.CMQCFC.MQIACF_UNCOMMITTED_MSGS"
@@ -182,6 +188,24 @@ mqMetrics:
 #            ibmConstant: "com.ibm.mq.constants.CMQC.MQIA_MSG_ENQ_COUNT"
 #            ibmCommand: "MQCMD_RESET_Q_STATS"
 
+# Enable the Last GET/PUT DATE/TIME below section. The following computed metrics will be created for each monitored queue if these statistics are enabled.
+# last_get_date_time, last_put_date_time, seconds_since_last_get, seconds_since_last_put
+#        - LastGetDate:
+#            alias: "Last Get Date"
+#            ibmConstant: "com.ibm.mq.constants.CMQCFC.MQCACF_LAST_GET_DATE"
+#            ibmCommand: "MQCMD_INQUIRE_Q_STATUS"
+#        - LastGetTime:
+#            alias: "Last Get Time"
+#            ibmConstant: "com.ibm.mq.constants.CMQCFC.MQCACF_LAST_GET_TIME"
+#            ibmCommand: "MQCMD_INQUIRE_Q_STATUS"
+#        - LastPutDate:
+#            alias: "Last Put Date"
+#            ibmConstant: "com.ibm.mq.constants.CMQCFC.MQCACF_LAST_PUT_DATE"
+#            ibmCommand: "MQCMD_INQUIRE_Q_STATUS"
+#        - LastPutTime:
+#            alias: "Last Put Time"
+#            ibmConstant: "com.ibm.mq.constants.CMQCFC.MQCACF_LAST_PUT_TIME"
+#            ibmCommand: "MQCMD_INQUIRE_Q_STATUS"
       
   # This Object will extract channel metrics
   - metricsType: "channelMetrics"

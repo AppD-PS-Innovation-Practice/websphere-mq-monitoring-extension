@@ -18,15 +18,15 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ibm.mq.MQException;
 import com.ibm.mq.constants.CMQC;
+import com.ibm.mq.constants.CMQCFC;
 import com.ibm.mq.pcf.*;
 import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException;
 import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class QueueMetricsCollector extends MetricsCollector implements Runnable {
@@ -125,6 +125,15 @@ public class QueueMetricsCollector extends MetricsCollector implements Runnable 
 			return;
 		}
 		for (int i = 0; i < response.length; i++) {
+			String last_get_date = "";
+			String last_get_time = "";
+			String last_put_date = "";
+			String last_put_time = "";
+			boolean last_get_date_time = false;
+			boolean last_put_date_time = false;
+			String tz;
+			tz = queueManager.getTimeZone()== null?"UTC":queueManager.getTimeZone().trim();
+			logger.debug("Timezone is set to {}",tz);
 			String queueName = response[i].getStringParameterValue(CMQC.MQCA_Q_NAME).trim();
 			Set<ExcludeFilters> excludeFilters = this.queueManager.getQueueFilters().getExclude();
 			if(!isExcluded(queueName,excludeFilters)) { //check for exclude filters
@@ -141,6 +150,87 @@ public class QueueMetricsCollector extends MetricsCollector implements Runnable 
 								int metricVal = response[i].getIntParameterValue(wmqOverride.getConstantValue());
 								Metric metric = createMetric(queueManager, metrickey, metricVal, wmqOverride, getAtrifact(), queueName, metrickey);
 								metrics.add(metric);
+							}else if (pcfParam instanceof MQCFST) {
+								long metricVal = 0;
+
+								String s_metricVal = response[i].getStringParameterValue(wmqOverride.getConstantValue()).trim();
+								if (!s_metricVal.isEmpty()) {
+									logger.debug("String value {} for : {} {}", s_metricVal, queueName, wmqOverride.getIbmConstant());
+
+									if (wmqOverride.getConstantValue() == com.ibm.mq.constants.CMQCFC.MQCACF_LAST_GET_DATE) {
+										last_get_date = s_metricVal;
+
+									} else if (wmqOverride.getConstantValue() == com.ibm.mq.constants.CMQCFC.MQCACF_LAST_GET_TIME) {
+										last_get_time = s_metricVal;
+
+									} else if (wmqOverride.getConstantValue() == com.ibm.mq.constants.CMQCFC.MQCACF_LAST_PUT_DATE) {
+										last_put_date = s_metricVal;
+
+									} else if (wmqOverride.getConstantValue() == CMQCFC.MQCACF_LAST_PUT_TIME) {
+										last_put_time = s_metricVal;
+
+									} else {
+										logger.debug("Skipping .. {}. Unsupported KPI.", wmqOverride.getConstantValue());
+										continue;
+									}
+
+
+									Metric metric;
+
+									if (!last_get_date.isEmpty() && !last_get_time.isEmpty() && !last_get_date_time) {
+										SimpleDateFormat sdtf = new java.text.SimpleDateFormat("yyyy-MM-dd hh.mm.ss");
+										String dateAndTime = last_get_date+" "+last_get_time;
+
+										sdtf.setTimeZone(TimeZone.getTimeZone(tz));
+										metricVal = 0;
+										try {
+											metricVal = sdtf.parse(dateAndTime).getTime() / 1000;
+
+
+										} catch (ParseException e) {
+											e.printStackTrace();
+										}
+										long epoch = System.currentTimeMillis() / 1000;
+										long seconds_since_last_get = epoch - metricVal;
+
+										metric = createMetric(queueManager, "last_get_date_time", metricVal, null, getAtrifact(), queueName, "last_get_date_time");
+										metrics.add(metric);
+
+										metric = createMetric(queueManager, "seconds_since_last_get", seconds_since_last_get, null, getAtrifact(), queueName, "seconds_since_last_get");
+										metrics.add(metric);
+										last_get_date_time = true;
+
+
+									}
+
+									if (!last_put_date.isEmpty() && !last_put_time.isEmpty() && !last_put_date_time) {
+										SimpleDateFormat sdtf = new java.text.SimpleDateFormat("yyyy-MM-dd hh.mm.ss");
+										String dateAndTime = last_put_date+" "+last_put_time;
+
+										sdtf.setTimeZone(TimeZone.getTimeZone(tz));
+										metricVal = 0;
+										try {
+											metricVal = sdtf.parse(dateAndTime).getTime() / 1000;
+
+
+										} catch (ParseException e) {
+											e.printStackTrace();
+										}
+										long epoch = System.currentTimeMillis() / 1000;
+										long seconds_since_last_put = epoch - metricVal;
+
+										metric = createMetric(queueManager, "last_put_date_time", metricVal, null, getAtrifact(), queueName, "last_put_date_time");
+										metrics.add(metric);
+
+										metric = createMetric(queueManager, "seconds_since_last_put", seconds_since_last_put, null, getAtrifact(), queueName, "seconds_since_last_put");
+										metrics.add(metric);
+										last_put_date_time = true;
+
+
+									}
+								}
+
+
 							}
 							else if(pcfParam instanceof MQCFIL){
 								int[] metricVals = response[i].getIntListParameterValue(wmqOverride.getConstantValue());

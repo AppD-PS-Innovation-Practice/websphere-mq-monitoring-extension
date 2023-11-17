@@ -50,7 +50,7 @@ class InquireQStatusCmdCollector extends QueueMetricsCollector implements Runnab
             return;
         }
 
-        int[] attrs = getIntAttributesArray(CMQC.MQCA_Q_NAME);
+        int[] attrs = getIntAttributesArray(CMQC.MQCA_Q_NAME, CMQCFC.MQIACF_ALL);
         logger.debug("Attributes being sent along PCF agent request to query queue metrics: {} for command {}",Arrays.toString(attrs),COMMAND);
 
         Set<String> queueGenericNames = this.queueManager.getQueueFilters().getInclude();
@@ -58,6 +58,7 @@ class InquireQStatusCmdCollector extends QueueMetricsCollector implements Runnab
             // list of all metrics extracted through MQCMD_INQUIRE_Q_STATUS is mentioned here https://www.ibm.com/support/knowledgecenter/SSFKSJ_8.0.0/com.ibm.mq.ref.adm.doc/q087880_.htm
             PCFMessage request = new PCFMessage(CMQCFC.MQCMD_INQUIRE_Q_STATUS);
             request.addParameter(CMQC.MQCA_Q_NAME, queueGenericName);
+            request.addParameter(CMQCFC.MQIACF_Q_STATUS_TYPE, CMQCFC.MQIACF_Q_STATUS);
             request.addParameter(CMQCFC.MQIACF_Q_STATUS_ATTRS, attrs);
             try {
                 processPCFRequestAndPublishQMetrics(queueGenericName, request,COMMAND);

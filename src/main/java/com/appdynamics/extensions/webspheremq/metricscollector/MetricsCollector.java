@@ -80,6 +80,17 @@ public abstract class MetricsCollector implements Runnable {
 		return metric;
 	}
 
+	protected Metric createMetric(QueueManager queueManager, String metricName, long metricValue, WMQMetricOverride wmqOverride, String... pathelements) {
+		String metricPath = getMetricsName(WMQUtil.getQueueManagerNameFromConfig(queueManager), pathelements);
+		Metric metric;
+		if (wmqOverride != null && wmqOverride.getMetricProperties() != null) {
+			metric = new Metric(metricName, String.valueOf(metricValue), metricPath, wmqOverride.getMetricProperties());
+		} else {
+			metric = new Metric(metricName, String.valueOf(metricValue), metricPath);
+		}
+		return metric;
+	}
+
 	protected void publishMetrics(List<Metric> metrics) {
 		metricWriteHelper.transformAndPrintMetrics(metrics);
 	}
