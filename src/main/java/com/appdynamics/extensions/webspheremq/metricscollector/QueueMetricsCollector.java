@@ -134,6 +134,7 @@ public class QueueMetricsCollector extends MetricsCollector implements Runnable 
 			String tz;
 			tz = queueManager.getTimeZone()== null?"UTC":queueManager.getTimeZone().trim();
 			logger.debug("Timezone is set to {}",tz);
+			logger.debug(response[i].toString());
 			String queueName = response[i].getStringParameterValue(CMQC.MQCA_Q_NAME).trim();
 			Set<ExcludeFilters> excludeFilters = this.queueManager.getQueueFilters().getExclude();
 			if(!isExcluded(queueName,excludeFilters)) { //check for exclude filters
@@ -178,7 +179,7 @@ public class QueueMetricsCollector extends MetricsCollector implements Runnable 
 									Metric metric;
 
 									if (!last_get_date.isEmpty() && !last_get_time.isEmpty() && !last_get_date_time) {
-										SimpleDateFormat sdtf = new java.text.SimpleDateFormat("yyyy-MM-dd hh.mm.ss");
+										SimpleDateFormat sdtf = new java.text.SimpleDateFormat("yyyy-MM-dd HH.mm.ss");
 										String dateAndTime = last_get_date+" "+last_get_time;
 
 										sdtf.setTimeZone(TimeZone.getTimeZone(tz));
@@ -192,11 +193,13 @@ public class QueueMetricsCollector extends MetricsCollector implements Runnable 
 										}
 										long epoch = System.currentTimeMillis() / 1000;
 										long seconds_since_last_get = epoch - metricVal;
+										long minutes_since_last_get = (epoch - metricVal)/60;
 
-										metric = createMetric(queueManager, "last_get_date_time", metricVal, null, getAtrifact(), queueName, "last_get_date_time");
-										metrics.add(metric);
+/*										metric = createMetric(queueManager, "last_get_date_time", metricVal, null, getAtrifact(), queueName, "last_get_date_time");
+										metrics.add(metric);*/
 
-										metric = createMetric(queueManager, "seconds_since_last_get", seconds_since_last_get, null, getAtrifact(), queueName, "seconds_since_last_get");
+										//metric = createMetric(queueManager, "seconds_since_last_get", seconds_since_last_get, null, getAtrifact(), queueName, "seconds_since_last_get");
+										metric = createMetric(queueManager, "minutes_since_last_get", minutes_since_last_get, null, getAtrifact(), queueName, "minutes_since_last_get");
 										metrics.add(metric);
 										last_get_date_time = true;
 
@@ -204,7 +207,7 @@ public class QueueMetricsCollector extends MetricsCollector implements Runnable 
 									}
 
 									if (!last_put_date.isEmpty() && !last_put_time.isEmpty() && !last_put_date_time) {
-										SimpleDateFormat sdtf = new java.text.SimpleDateFormat("yyyy-MM-dd hh.mm.ss");
+										SimpleDateFormat sdtf = new java.text.SimpleDateFormat("yyyy-MM-dd HH.mm.ss");
 										String dateAndTime = last_put_date+" "+last_put_time;
 
 										sdtf.setTimeZone(TimeZone.getTimeZone(tz));
@@ -218,11 +221,13 @@ public class QueueMetricsCollector extends MetricsCollector implements Runnable 
 										}
 										long epoch = System.currentTimeMillis() / 1000;
 										long seconds_since_last_put = epoch - metricVal;
+										long minutes_since_last_put = (epoch - metricVal)/60;
 
-										metric = createMetric(queueManager, "last_put_date_time", metricVal, null, getAtrifact(), queueName, "last_put_date_time");
-										metrics.add(metric);
+/*										metric = createMetric(queueManager, "last_put_date_time", metricVal, null, getAtrifact(), queueName, "last_put_date_time");
+										metrics.add(metric);*/
 
-										metric = createMetric(queueManager, "seconds_since_last_put", seconds_since_last_put, null, getAtrifact(), queueName, "seconds_since_last_put");
+										//metric = createMetric(queueManager, "seconds_since_last_put", seconds_since_last_put, null, getAtrifact(), queueName, "seconds_since_last_put");
+										metric = createMetric(queueManager, "minutes_since_last_put", minutes_since_last_put, null, getAtrifact(), queueName, "minutes_since_last_put");
 										metrics.add(metric);
 										last_put_date_time = true;
 
